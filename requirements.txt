@@ -1,0 +1,12 @@
+pandas
+scikit-learn
+tensorflow
+keras
+plotly
+Pillow
+nbformat 
+ipython
+matplotlib
+ipykernel
+Flask
+flask_cors
