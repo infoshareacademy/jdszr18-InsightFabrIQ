@@ -24,7 +24,8 @@ python3 app.py
 
 w nowym terminalu:
 
-```curl -X GET http://127.0.0.1:5000/images \
+```
+curl -X POST http://127.0.0.1:5000/predict \
 -H "Content-Type: application/json" \
 -d '{"imagePath": "1532.jpg"}'
 ```

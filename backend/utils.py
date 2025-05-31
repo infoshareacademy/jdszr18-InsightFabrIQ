@@ -5,6 +5,8 @@ from tensorflow.keras.models import load_model
 import numpy as np
 from config import MODEL_PATH
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
+from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
+
 import pandas as pd
 
 model = load_model(MODEL_PATH)
@@ -12,7 +14,8 @@ model = load_model(MODEL_PATH)
 
 def preprocess_image(image_path, target_size=(128, 128)):
     img = load_img(image_path, target_size=target_size)
-    img_array = img_to_array(img) / 255.0
+    img_array = img_to_array(img)
+    img_array = preprocess_input(img_array)
     return img_array
 
 
