@@ -8,8 +8,39 @@ from tensorflow.keras.preprocessing.image import load_img, img_to_array
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 
 import pandas as pd
+from sklearn.metrics import mean_squared_error
 
 model = load_model(MODEL_PATH)
+
+def load_dataframe():
+    df = pd.read_csv(DATA_FRAME_PATH)
+    df['image_path'] = df['image_path'].apply(lambda x: f"../{x}")
+    return df
+
+def mse(img1, img2):
+    return mean_squared_error(img1.flatten(), img2.flatten())
+
+def find_similar_images(input_image_path, top_n=10):
+    df = load_dataframe()
+
+    input_img = preprocess_image(input_image_path)
+    input_img_batch = np.expand_dims(input_img, axis=0)
+
+    predicted_probs = model.predict(input_img_batch)
+    predicted_class_index = np.argmax(predicted_probs)
+    predicted_class_label = predicted_class_index
+
+    same_class_paths = df[df['label'] == predicted_class_label]['image_path'].values
+
+    mse_scores = []
+    for path in same_class_paths:
+        img = preprocess_image(path)
+        score = mse(input_img, img)
+        mse_scores.append((path, score))
+
+    top_matches = sorted(mse_scores, key=lambda x: x[1])[:top_n]
+
+    return [path for path, _ in top_matches]
 
 
 def preprocess_image(image_path, target_size=(128, 128)):
@@ -46,7 +77,4 @@ def predict_image(image_path):
     return {"predicted_classes": results, "similar_products": []}
 
 
-def load_dataframe():
-    df = pd.read_csv(DATA_FRAME_PATH)
-    df['image_path'] = df['image_path'].apply(lambda x: f"../{x}")
-    return df
+
