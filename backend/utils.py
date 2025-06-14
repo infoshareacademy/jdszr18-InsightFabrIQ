@@ -1,4 +1,5 @@
-from config import LABEL_MAPPING_PATH, DATA_FRAME_PATH
+import os
+from config import ALLOWED_EXTENSIONS, IMAGES_PATH, LABEL_MAPPING_PATH, DATA_FRAME_PATH
 import json
 
 from tensorflow.keras.models import load_model
@@ -12,13 +13,16 @@ from sklearn.metrics import mean_squared_error
 
 model = load_model(MODEL_PATH)
 
+
 def load_dataframe():
     df = pd.read_csv(DATA_FRAME_PATH)
     df['image_path'] = df['image_path'].apply(lambda x: f"../{x}")
     return df
 
+
 def mse(img1, img2):
     return mean_squared_error(img1.flatten(), img2.flatten())
+
 
 def find_similar_images(input_image_path, top_n=10):
     df = load_dataframe()
@@ -30,17 +34,18 @@ def find_similar_images(input_image_path, top_n=10):
     predicted_class_index = np.argmax(predicted_probs)
     predicted_class_label = predicted_class_index
 
-    same_class_paths = df[df['label'] == predicted_class_label]['image_path'].values
+    df['label'] = df['articleType'].astype('category').cat.codes
+    same_class_rows = df[df['label'] == predicted_class_label]
 
     mse_scores = []
-    for path in same_class_paths:
-        img = preprocess_image(path)
+    for _, row in same_class_rows.iterrows():
+        img = preprocess_image(os.path.join(IMAGES_PATH, f"{row['id']}.jpg"))
         score = mse(input_img, img)
-        mse_scores.append((path, score))
+        mse_scores.append((row['id'], score))
 
     top_matches = sorted(mse_scores, key=lambda x: x[1])[:top_n]
 
-    return [path for path, _ in top_matches]
+    return [image_id for image_id, _ in top_matches]
 
 
 def preprocess_image(image_path, target_size=(128, 128)):
@@ -74,7 +79,8 @@ def predict_image(image_path):
 
     results = sorted(results, key=lambda x: x["probability"], reverse=True)[:5]
 
-    return {"predicted_classes": results, "similar_products": []}
+    return {"predicted_classes": results}
 
 
-
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS

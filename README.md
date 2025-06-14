@@ -22,10 +22,19 @@ python3 app.py
 
 <h4>⦿ Przykładowe wykorzystanie endpointu</h4>
 
-w nowym terminalu:
+w nowym terminalu (MacOS):
 
 ```
 curl -X POST http://127.0.0.1:5000/predict \
 -H "Content-Type: application/json" \
 -d '{"imagePath": "1532.jpg"}'
+```
+
+w nowym terminalu (Windows):
+
+```
+Invoke-WebRequest -Uri "http://127.0.0.1:5000/predict" `
+  -Method POST `
+  -Body '{"imagePath": "99999.jpg"}' `
+  -ContentType "application/json"
 ```
